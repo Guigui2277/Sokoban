@@ -106,7 +106,7 @@ int main(){
 	printf("Quel niveau voulez vous charger ? (ex: niveau1.sok) : ");
 	scanf("%s", fichier); // sélection du fichier de la partie
 	
-	printf("Entrez le nom du  de déplacements (ex: deplacements1.sok) : ");
+	printf("Entrez le nom du fichier de déplacements (ex: niveau1.sok) : ");
 	scanf("%s", deplacements); // sélection du fichier des déplacements
 	
 	
