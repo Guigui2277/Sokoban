@@ -80,7 +80,7 @@ void conditions_dep(t_partie *jeu, int depx, int depy, char touche);
 void deplacer_joueur(t_partie *jeu, int depx, int depy);
 void deplacer_caisse(t_partie *jeu, int depx, int depy, int casx, int casy);
 void annuler_deplacer(t_partie *jeu, char last);
-void jouer(t_partie *jeu, char fichier[], char deplacements[]);
+void Analyse(t_partie *jeu, char fichier[], char deplacements[]);
 bool gagner(t_partie *jeu);
 
 /**
@@ -93,18 +93,18 @@ int main(){
 	t_partie jeu;
 	jeu.posx = 0; // initialisation de la position
 	jeu.posy = 0; 
-	int maxTaille;
-	char fichier[TAILLE_FICHIER]; // pour stocker le nom du fichier de la partie
-	char deplacements[TAILLE_FICHIER]; // pour stocker le nom du fichier des déplacements
+	int maxTaille; // nombre de caractères dans le tableau des déplacements
+	char fichier[TAILLE_FICHIER]; // le nom du fichier de la partie
+	char deplacements[TAILLE_FICHIER]; // le nom du fichier des déplacements
 
 	// sélection du niveau
 	printf("Quel niveau voulez vous charger ? (ex: niveau1.sok) : ");
 	scanf("%s", fichier); // sélection du fichier de la partie
-	chargerPartie(jeu.plateau, fichier); // charge le fichier
+	chargerPartie(jeu.plateau, fichier); // charge le fichier du plateau
 	
 	printf("Entrez le nom du fichier de déplacements (ex: niveau1.sok) : ");
 	scanf("%s", deplacements); // sélection du fichier des déplacements
-	chargerDeplacements(jeu.historiqueDep, deplacements, &maxTaille); // charge le fichier des déplacements
+	chargerDeplacements(jeu.historiqueDep, deplacements, &maxTaille);
 
 	system("clear");
 	afficher_entete(&jeu, fichier, deplacements); 
@@ -113,7 +113,7 @@ int main(){
 	// tant qu'il y a des caisses à déplacer
 	for (jeu.nbDep = 0; jeu.nbDep < maxTaille; jeu.nbDep++) {
 		usleep(500000); // pause de 0.5 seconde
-		jouer(&jeu, fichier, deplacements);
+	 	Analyse(&jeu, fichier, deplacements);
 	}
 
 	// affichage des résultats
@@ -155,6 +155,14 @@ void chargerPartie(t_plateau plateau, char fichier[]){
         fclose(f);
     }
 }
+
+/**
+* @brief charge les caractères sur lignes et colonnes de la partie
+* @param t type : tableau, entrée/sortie, importe le tableau des déplacements
+* @param fichier type : chaine, entrée, fichier des déplacements 
+* @param nb type : entier, entrée/sortie, nombre de caractères chargés
+* @return résultat : chargement de la partie
+*/
 
 void chargerDeplacements(typeDeplacements t, char fichier[], int * nb){
     FILE * f;
@@ -304,7 +312,7 @@ void chercher_joueur(t_partie *jeu){
 * @param depy type : entier, entrée, case de destination verticale
 	ou position de la caisse
 * @param nbDep type : entier, entrée/sortie, nombre de déplacements effectués
-* @param touche type : caractère, entrée, importe la touche appuyée
+* @param last type : caractère, entrée, dernier caractère de déplacement
 * @return résultat : la caisse peut/peut pas se déplacer
 */
 
@@ -399,7 +407,7 @@ void deplacer_caisse(t_partie *jeu, int depx, int depy, int casx, int casy){
 }
 
 /**
-* @brief cette procédure contient les touches et conditions pour jouer.
+* @brief cette procédure contient les touches et conditions pour Analyse.
 * @param plateau type : tableau, entrée/sortie, importe le tableau de jeu
 * @param historiqueDep type : tableau, entrée/sortie, importe le 
 	tableau des déplacements
@@ -408,10 +416,10 @@ void deplacer_caisse(t_partie *jeu, int depx, int depy, int casx, int casy){
 * @param nbDep type : entier, entrée/sortie, nombre de déplacements
 * @param echelle type : entier, entrée, taille du tableau
 * @param fichier type : chaine, entrée, fichier de sauvegarde
-* @return résultat : permet de jouer au jeu
+* @return résultat : permet de Analyse au jeu
 */
 
-void jouer(t_partie *jeu, char fichier[], char deplacements[]){
+void Analyse(t_partie *jeu, char fichier[], char deplacements[]){
 
 
 	char last; // caractère des déplacements du joueur
