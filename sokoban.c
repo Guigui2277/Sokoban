@@ -389,6 +389,15 @@ void deplacer_caisse(t_partie *jeu, int depx, int depy, int casx, int casy){
 	}
 }
 
+/**
+* @brief cette procédure permet d'annuler les déplacements précédents
+* @param plateau type : tableau, entrée/sortie, importe le tableau de jeu
+* @param posx type : entier, entrée/sortie, position verticale du joueur
+* @param posy type : entier, entrée/sortie, position horizontale du joueur
+* @param last type : caractère, entrée, stocke le caractère de déplacement
+* @return résultat : retourne le perso et/ou caisse sur l'ancien deplacement
+*/
+
 void annuler_deplacer(t_partie *jeu, char last){
 
 	int depx = jeu->posx; //case de déplacement horizontale
@@ -470,6 +479,10 @@ void Analyse(t_partie *jeu, char fichier[], char deplacements[]){
 				break;
 			case 'd' :
 				depy++; //déplacement à Gauche
+				break;
+			case 'u' :
+				last = jeu->historiqueDep[jeu->nbDep-1]; // stocke le caractère de la case
+				annuler_deplacer(jeu, last); 
 				break;
 			default:
 				break;
