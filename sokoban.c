@@ -1,12 +1,14 @@
 /**
 * @file sokoban.c
-* @brief Programme qui fait tourner un jeu de sokoban
-* @author Guillaume ANTOINES
-* @version 2.0
-* @date 30/11/2025
+* @brief Programme qui déplace le sokoban en fonction d'un caractère 
+* @author Guillaume ANTOINES, Yanis RAULO
+* @version 1.0
+* @date 14/12/2025
 *
-* Ce programme fait tourner un jeu de sokoban dont le but est de déplacer
-* toutes les caisses sur des cibles pour gagner la partie.
+* Ce programme fait tourner un jeu de sokoban et analyse un fichier saisi par 
+* l'utilisateur contenant des caractères en majuscules ou minuscules afin de déplacer
+* le personnage en fonction de la lettre.
+* 
 *
 */
 
@@ -100,10 +102,11 @@ int main(){
 	afficher_entete(&jeu, fichier, deplacements); 
 	afficher_plateau(&jeu);
 	chercher_joueur(&jeu);
+
 	// tant qu'il y a des caisses à déplacer
 	while (jeu.nbDep < maxTaille && !gagner(&jeu)) {
-		usleep(250000); // pause de 0.25 seconde
-		Analyse(&jeu, fichier, deplacements);
+		usleep(500000); // pause de 0.25 seconde
+		Analyse(&jeu, fichier, deplacements); //
 		jeu.nbDep++;
 	}
 
@@ -111,7 +114,7 @@ int main(){
 	if (gagner(&jeu)) {
 		printf("La suite de déplacements %s est bien une solution pour la partie %s.\n", fichier, deplacements);
 		if (jeu.nbDep < maxTaille){
-			printf("Elle contenait de base %d caractères\n", maxTaille);
+			printf("Elle contenait de base %d caractères.\n", maxTaille);
 		}
 		printf("La partie contient actuellement %d déplacements.\n", jeu.nbDep);
 	} 
@@ -400,35 +403,49 @@ void deplacer_caisse(t_partie *jeu, int depx, int depy, int casx, int casy){
 
 void annuler_deplacer(t_partie *jeu, char last){
 
-	int depx = jeu->posx; //case de déplacement horizontale
-	int depy = jeu->posy; //case de déplacement verticale
+	int depx = jeu->posx; // case de déplacement horizontale
+	int depy = jeu->posy; // case de déplacement verticale
 	int casx; // case de déplacement de la caisse
 	int casy; 
 	int ancienx; // ancienne case de la caisse
 	int ancieny; 
+	int undoCase = 0; // case précédente
+	int retour = 1; // retour du dernier déplacement
+
+	// tant que le caractère correspond à un retour
+	while(last == 'u'){
+		undoCase++; // observation du caractère précédent
+		last = jeu->historiqueDep[jeu->nbDep-undoCase]; // stocke le caractère précédent
+		if (last == 'u'){ // si la case précédente est toujours un retour
+			retour = retour + 2; // dernier déplacement potentiel
+		}
+	}
+
+	// incrémentation du dernier déplacement effectué
+	last = jeu->historiqueDep[jeu->nbDep-retour];
 
 	if (last == DEP_HAUT || last == CAISSE_HAUT) {
-		depx++; //déplacement vers le Haut
+		depx++; // déplacement vers le Haut
 	}
 	else if (last == DEP_BAS || last == CAISSE_BAS) {
-		depx--; //déplacement vers le Bas
+		depx--; // déplacement vers le Bas
 	}
 	else if (last == DEP_GAUCHE || last == CAISSE_GAUCHE) {
-		depy++; //déplacement à Droite
+		depy++; // déplacement à Droite
 	}
 	else if (last == DEP_DROITE || last == CAISSE_DROITE) {
-		depy--; //déplacement à Gauche
+		depy--; // déplacement à Gauche
 	}
 	// la case de destination de la caisse correspond a l'ancienne du personnage
 	casx = jeu->posx;
 	casy = jeu->posy;
 	// changement de position du caractère
+	if (jeu->plateau[depx][depy] != MUR){
 	deplacer_joueur(jeu, depx, depy);
+	}
 	// si les anciens déplacements correspondent à celui d'une caisse
-	if (last == CAISSE_HAUT ||
-		last == CAISSE_BAS ||
-		last == CAISSE_GAUCHE ||
-		last == CAISSE_DROITE) {
+	if (last == CAISSE_HAUT || last == CAISSE_BAS ||
+		last == CAISSE_GAUCHE || last == CAISSE_DROITE) {
 		// ancienne position de la caisse
 		ancienx = casx + (casx - jeu->posx);
 		ancieny = casy + (casy - jeu->posy);
@@ -469,31 +486,36 @@ void Analyse(t_partie *jeu, char fichier[], char deplacements[]){
 	// déplacement selon le caractère scanné
 		switch (last) {
 			case 'h' :
-				depx--; //déplacement vers le Haut
+				depx--; // déplacement vers le Haut
 				break;
 			case 'b' :
-				depx++; //déplacement vers le Bas
+				depx++; // déplacement vers le Bas
 				break;
 			case 'g' :
-				depy--; //déplacement à Droite
+				depy--; // déplacement à Droite
 				break;
 			case 'd' :
-				depy++; //déplacement à Gauche
+				depy++; // déplacement à Gauche
 				break;
 			case 'u' :
-				last = jeu->historiqueDep[jeu->nbDep-1]; // stocke le caractère de la case
 				annuler_deplacer(jeu, last); 
 				break;
 			default:
 				break;
 		}
 
-		if (jeu->plateau[depx][depy] == CAISSE) {
-			last = toupper(last); // conversion en majuscule
-		}
-		// si les touches sont celles de déplacements on utilise les conditions
 		
+		// si les caractères sont celles de déplacements on utilise les conditions
+		if (last == 'd' || last == 'b' ||
+			last == 'h' || last == 'g'){
+			// si la case de déplacement correspond à une caisse ou une caisse sur cible
+			if (jeu->plateau[depx][depy] == CAISSE ||
+				jeu->plateau[depx][depy] == CAISSE_CIBLE) {
+				last = toupper(last); // conversion en majuscule
+			}
 			conditions_dep(jeu, depx, depy, last);
+			}
+		
 		
 		system("clear");
 		afficher_entete(jeu, fichier, deplacements);
